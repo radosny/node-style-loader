@@ -1,4 +1,8 @@
-# node-style-loader
+# node-style-loader-async
+
+This is a fork from: https://github.com/iheartradio/node-style-loader
+
+The only difference between node-style-loader and node-style-loader-async is support for async function in collectContext.
 
 A Webpack loader for loading styles on the server side. It behaves almost identically to how `style-loader` operates on the client side, which allows you to use it without changing the way you load CSS in your application components.
 
@@ -7,7 +11,7 @@ Similarly to how `style-loader` loads styles into the DOM, this package supports
 ## Installation
 
 ```
-$ npm install node-style-loader --save-dev
+$ npm install node-style-loader-async --save-dev
 ```
 
 ## Usage
@@ -66,11 +70,47 @@ import {collectInitial, collectContext} from 'node-style-loader/collect'
 // do not call this before your routes have been imported
 const initialStyleTag = collectInitial()
 
-function renderPage(contextEl, props) {
+function async renderPage(contextEl, props) {
 
   // render and capture CSS
-  const [contextStyleTag, reactString] = collectContext(
+  const [contextStyleTag, reactString] = await collectContext(
     () => renderToString(createElement(contextEl, props)))
+
+  return(
+   `<!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        ${initialStyleTag}
+        ${contextStyleTag}
+      </head>
+      <body>
+        <div id="mount">${reactString}</div>
+        <script src="/build/bundle.js"></script>
+      </body>
+    </html>`
+  )
+}
+
+```
+
+### Usage for import splitting with async rendering
+If you want to use `renderToNodeStream` together with `collectContext` you should first promisify stream with ex. `getStream` and then use for `collectContext` with async function as argument.
+```js
+import {collectInitial, collectContext} from 'node-style-loader-async/collect'
+
+
+// do not call this before your routes have been imported
+const initialStyleTag = collectInitial()
+
+function async renderPage(contextEl, props) {
+
+  // render and capture CSS
+  const [contextStyleTag, reactString] = await collectContext(
+      async () => {
+        const reactStream = ReactDOMServer.renderToNodeStream(createElement(contextEl, props));
+        return await getStream(reactStream);
+    });
 
   return(
    `<!DOCTYPE html>
@@ -104,13 +144,13 @@ serverStyleCleanup()
 
 ## Server-side style rendering loaders comparison
 
-|     | style collection | CSS Modules | style import splitting | shadows style-loader rendering |
-| --- | ---------------- | ----------- | ---------------------- | ------------------------------ |
-| node-style-loader | yes | yes | yes, standard | partial |
-| [react-webpack-server-side-example](https://github.com/webpack/react-webpack-server-side-example) | incomplete | no | partial, standard | no |
-| [style-collector-loader](https://github.com/thereactivestack/style-collector-loader) | requires globals | no | no | no |
-| [fake-style-loader](https://github.com/dferber90/fake-style-loader) | partially out of scope | yes | N/A | no |
-| [isomorphic-style-loader](https://github.com/kriasoft/isomorphic-style-loader) | yes | yes | partial, non-standard | no |
+|                                                                                                   | style collection       | CSS Modules | style import splitting | shadows style-loader rendering |
+| ------------------------------------------------------------------------------------------------- | ---------------------- | ----------- | ---------------------- | ------------------------------ |
+| node-style-loader                                                                                 | yes                    | yes         | yes, standard          | partial                        |
+| [react-webpack-server-side-example](https://github.com/webpack/react-webpack-server-side-example) | incomplete             | no          | partial, standard      | no                             |
+| [style-collector-loader](https://github.com/thereactivestack/style-collector-loader)              | requires globals       | no          | no                     | no                             |
+| [fake-style-loader](https://github.com/dferber90/fake-style-loader)                               | partially out of scope | yes         | N/A                    | no                             |
+| [isomorphic-style-loader](https://github.com/kriasoft/isomorphic-style-loader)                    | yes                    | yes         | partial, non-standard  | no                             |
 
 ## Roadmap
 

@@ -14,13 +14,13 @@ exports.collectInitial = function collectInitial() {
   return styleTag;
 }
 
-exports.collectContext = function collectContext(fn) {
+exports.collectContext = async function collectContext(fn) {
 
   var contextStyleStack = new styleStack();
 
   // include path differences may make this fail, TODO: test
   exports.add = add.bind(null, contextStyleStack);
-  var result = fn();
+  var result = await fn();
   exports.add = inactiveAdd;
 
   return [

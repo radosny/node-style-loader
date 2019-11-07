@@ -38,3 +38,6 @@ jspm_packages
 
 # OS X system files
 .DS_Store
+
+#Other
+.history
