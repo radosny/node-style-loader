@@ -1,8 +1,11 @@
 # node-style-loader-async
 
-This is a fork from: https://github.com/iheartradio/node-style-loader
+This is a fork from a fork: https://github.com/radosny/node-style-loader
+original non-async repo: https://github.com/tarikjn/node-style-loader
 
-The only difference between node-style-loader and node-style-loader-async is support for async function in collectContext.
+The only difference between node-style-loader and redosny node-style-loader-async is support for async function in collectContext.
+
+This repo fixed sass loader issue in vue projects. Before it was not returning styles.
 
 A Webpack loader for loading styles on the server side. It behaves almost identically to how `style-loader` operates on the client side, which allows you to use it without changing the way you load CSS in your application components.
 
